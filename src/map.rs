@@ -1,5 +1,5 @@
-use super::{World, MAPCOUNT, MAPHEIGHT, MAPWIDTH, NUMCOLORS};
-use rltk::RandomNumberGenerator;
+use super::{State, World, MAPCOUNT, MAPHEIGHT, MAPWIDTH, NUMCOLORS};
+use rltk::{RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
 use specs_derive::Component;
 
@@ -22,7 +22,7 @@ impl Map {
             states: Vec::new(),
         };
 
-        for idx in 0..(MAPCOUNT - 1) {
+        for idx in 0..(MAPCOUNT) {
             map.states.push(rng.roll_dice(1, NUMCOLORS));
         }
         map
@@ -36,8 +36,6 @@ impl Map {
             self.states[new_idx % self.width]
         }
     }
-
-    pub fn draw(&self) {}
 
     pub fn idx_xy(&self, idx: usize) -> (i32, i32) {
         let x = (idx % self.width) as i32;
@@ -55,7 +53,7 @@ impl Map {
 
     pub fn right(&self, idx: usize) -> i32 {
         if (idx + 1) % self.width == 0 {
-            self.states[idx - self.width + 1]
+            self.states[idx + 1 - self.width]
         } else {
             self.states[idx + 1]
         }
@@ -72,6 +70,72 @@ impl Map {
         } else {
             let new_idx = idx - self.width;
             self.states[new_idx]
+        }
+    }
+}
+
+pub fn draw(ecs: &mut State, ctx: &mut Rltk) {
+    let map = ecs.ecs.fetch::<Map>();
+    let mut y = 0;
+    let mut x = 0;
+
+    for (idx, tile) in map.states.iter().enumerate() {
+        let glyph = rltk::to_cp437('.');
+        let mut fg = RGB::from_f32(0., 0., 0.);
+        let mut bg = RGB::from_f32(0., 0., 0.);
+        match tile {
+            0 => {
+                fg = RGB::from_f32(0., 0., 0.);
+                bg = RGB::from_f32(0., 0., 0.);
+            }
+            1 => {
+                fg = RGB::from_f32(255., 0., 0.);
+                bg = RGB::from_f32(255., 0., 0.);
+            }
+            2 => {
+                fg = RGB::from_f32(0., 255., 0.);
+                bg = RGB::from_f32(0., 255., 0.);
+            }
+            3 => {
+                fg = RGB::from_f32(0., 0., 255.);
+                bg = RGB::from_f32(0., 0., 255.);
+            }
+            4 => {
+                fg = RGB::from_f32(128., 128., 0.);
+                bg = RGB::from_f32(128., 128., 0.);
+            }
+            5 => {
+                fg = RGB::from_f32(128., 0., 128.);
+                bg = RGB::from_f32(128., 0., 128.);
+            }
+            6 => {
+                fg = RGB::from_f32(0., 128., 128.);
+                bg = RGB::from_f32(0., 128., 128.);
+            }
+            7 => {
+                fg = RGB::from_f32(128., 128., 128.);
+                bg = RGB::from_f32(128., 128., 128.);
+            }
+            8 => {
+                fg = RGB::from_f32(255., 255., 0.);
+                bg = RGB::from_f32(255., 255., 0.);
+            }
+            9 => {
+                fg = RGB::from_f32(255., 0., 255.);
+                bg = RGB::from_f32(255., 0., 255.);
+            }
+            _ => {
+                bg = RGB::from_f32(0., 255., 255.);
+                fg = RGB::from_f32(0., 255., 255.);
+            }
+        }
+        ctx.set(x, y, fg, bg, glyph);
+
+        // Move the coordinates
+        x += 1;
+        if x > 79 {
+            x = 0;
+            y += 1;
         }
     }
 }
@@ -194,5 +258,13 @@ mod tests {
         }
         map.states[2 * map.width] = 2;
         assert_eq!(map.right(3 * map.width - 1), 2)
+    }
+
+    #[test]
+    fn map_size() {
+        let mut world = World::new();
+        world.insert(rltk::RandomNumberGenerator::new());
+        let mut map = Map::new(&mut world);
+        assert_eq!(map.width * map.height, map.states.len());
     }
 }
