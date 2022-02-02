@@ -22,8 +22,8 @@ impl Map {
             states: Vec::new(),
         };
 
-        for idx in 0..(MAPCOUNT) {
-            map.states.push(rng.roll_dice(1, NUMCOLORS));
+        for _idx in 0..(MAPCOUNT) {
+            map.states.push(rng.roll_dice(1, NUMCOLORS) - 1);
         }
         map
     }
@@ -79,7 +79,7 @@ pub fn draw(ecs: &mut State, ctx: &mut Rltk) {
     let mut y = 0;
     let mut x = 0;
 
-    for (idx, tile) in map.states.iter().enumerate() {
+    for (_idx, tile) in map.states.iter().enumerate() {
         let glyph = rltk::to_cp437('.');
         let mut fg = RGB::from_f32(0., 0., 0.);
         let mut bg = RGB::from_f32(0., 0., 0.);
@@ -142,7 +142,7 @@ pub fn draw(ecs: &mut State, ctx: &mut Rltk) {
 
 #[cfg(test)]
 mod tests {
-    use super::{Map, MAPHEIGHT, MAPWIDTH};
+    use super::Map;
     use specs::{prelude::*, World};
 
     #[test]
@@ -264,7 +264,7 @@ mod tests {
     fn map_size() {
         let mut world = World::new();
         world.insert(rltk::RandomNumberGenerator::new());
-        let mut map = Map::new(&mut world);
+        let map = Map::new(&mut world);
         assert_eq!(map.width * map.height, map.states.len());
     }
 }

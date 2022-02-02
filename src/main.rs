@@ -3,10 +3,10 @@ mod evolution_system;
 mod map;
 
 // use components::*;
-use evolution_system::Evolution;
-use map::{draw, Map};
+use map::Map;
 use rltk::{GameState, Rltk};
-use specs::{prelude::*, RunNow, World, WorldExt};
+use specs::{RunNow, World, WorldExt};
+use std::{thread, time};
 
 pub const MAPWIDTH: usize = 80;
 pub const MAPHEIGHT: usize = 50;
@@ -19,10 +19,12 @@ pub struct State {
 
 impl State {
     fn run_systems(&mut self) {
+        let sleep_time = time::Duration::from_millis(500);
         let mut evo = evolution_system::Evolution;
         evo.run_now(&self.ecs);
 
         self.ecs.maintain();
+        thread::sleep(sleep_time);
     }
 }
 
