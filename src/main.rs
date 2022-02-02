@@ -19,7 +19,7 @@ pub struct State {
 
 impl State {
     fn run_systems(&mut self) {
-        let sleep_time = time::Duration::from_millis(500);
+        let sleep_time = time::Duration::from_millis(200);
         let mut evo = evolution_system::Evolution;
         evo.run_now(&self.ecs);
 
